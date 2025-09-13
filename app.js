@@ -351,8 +351,8 @@ function renderResults(res){
 async function initSQL(){
   try {
     SQL = await window.initSqlJs({
-      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-    });
+  locateFile: file => `./${file}`   // loads sql-wasm.wasm from same folder as index.html
+});
     db = new SQL.Database();
     seedDatabase(db);
   } catch(e){
