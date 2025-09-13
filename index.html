@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Learner — Student‑friendly Playground</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <style>
+    :root{
+      --fg:#0f172a; --bg:#ffffff; --muted:#475569; --card:#f8fafc; --border:#e2e8f0; --accent:#eef2ff;
+      --green:#0ea5a5; --red:#dc2626;
+    }
+    .dark{ --fg:#e5e7eb; --bg:#0b1220; --muted:#94a3b8; --card:#0f172a; --border:#1f2937; --accent:#111827; }
+    html,body{height:100%;}
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial; color:var(--fg); background:var(--bg); }
+    header{ position:sticky; top:0; z-index:10; background:color-mix(in hsl, var(--bg), transparent 10%); backdrop-filter: blur(8px);
+      border-bottom:1px solid var(--border); }
+    .container{ max-width:1200px; margin:0 auto; padding:12px 16px; }
+    .row{ display:grid; grid-template-columns:280px 1fr; gap:16px; }
+    @media (max-width: 900px){ .row{ grid-template-columns:1fr; } }
+    .card{ background:var(--card); border:1px dashed var(--border); border-radius:14px; padding:12px; }
+    .btn{ display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#fff0; color:var(--fg); cursor:pointer; }
+    .btn.primary{ background:var(--fg); color:var(--bg); border-color:var(--fg); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .muted{ color:var(--muted); }
+    .badge{ font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+    .title{ font-weight:600; font-size:16px; display:flex; align-items:center; gap:8px; margin:0 0 4px; }
+    .small{ font-size:12px; }
+    .editor{ width:100%; min-height:140px; border:1px solid var(--border); background:var(--bg); color:var(--fg); border-radius:12px; padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; }
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+    .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+    .chip{ font-size:10px; padding:3px 8px; background:var(--accent); border:1px solid var(--border); border-radius:999px;}
+    .footer{ text-align:center; border-top:1px solid var(--border); padding:10px; font-size:12px; color:var(--muted); margin-top:20px;}
+    .search{ width:100%; border:1px solid var(--border); background:var(--bg); color:var(--fg); border-radius:10px; padding:8px 10px; }
+    .grid{ display:grid; gap:10px; }
+    .lesson-btn{ width:100%; text-align:left; background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:10px; cursor:pointer; }
+    .lesson-btn.active{ background:var(--accent); }
+    .row-flex{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .error{ color:var(--red); font-size:13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container row-flex">
+      <h1 class="title" style="font-size:18px;">📘 SQL Learner — Student‑friendly Playground <span class="badge">Static</span></h1>
+      <div style="margin-left:auto;" class="row-flex">
+        <button id="themeBtn" class="btn" title="Toggle theme">🌗 Theme</button>
+        <button id="resetBtn" class="btn" title="Reset the demo database">🔄 Reset DB</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="row">
+      <!-- Sidebar -->
+      <aside>
+        <div class="card">
+          <p class="title">📚 Curriculum</p>
+          <p class="small muted">Short, practical lessons. Progress is saved in your browser.</p>
+          <input id="search" class="search" placeholder="Search lessons or tags…" />
+          <div id="lessons" class="grid" style="margin-top:10px;"></div>
+          <div style="margin-top:10px;">
+            <span class="small muted">Overall progress</span>
+            <div style="height:8px; background:var(--border); border-radius:999px; margin-top:6px;">
+              <div id="progressBar" style="height:8px; width:0%; background:var(--green); border-radius:999px;"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <section class="grid">
+        <div class="card">
+          <div>
+            <p id="lessonTitle" class="title">🏁 Intro</p>
+            <p id="lessonMeta" class="small muted"></p>
+            <p id="lessonContent" class="small" style="margin-top:8px;"></p>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="row-flex">
+              <button id="tabPlayground" class="btn primary">Playground</button>
+              <button id="tabExamples" class="btn">Examples</button>
+              <button id="tabExercises" class="btn">Exercises</button>
+            </div>
+
+            <!-- Playground -->
+            <div id="panelPlayground" style="margin-top:10px;">
+              <label class="small muted">Write SQL:</label>
+              <textarea id="editor" class="editor">SELECT * FROM Employees LIMIT 5;</textarea>
+              <div class="row-flex" style="margin-top:8px;">
+                <button id="runBtn" class="btn primary">▶ Run</button>
+                <button id="loadStarter" class="btn">Load Starter SQL</button>
+                <button id="checkBtn" class="btn">✔ Check Answer</button>
+              </div>
+              <p id="error" class="error"></p>
+              <div id="results" style="margin-top:10px;"></div>
+            </div>
+
+            <!-- Examples -->
+            <div id="panelExamples" style="display:none; margin-top:10px;">
+              <div id="examples" class="grid"></div>
+            </div>
+
+            <!-- Exercises -->
+            <div id="panelExercises" style="display:none; margin-top:10px;">
+              <div id="exercises" class="grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="title">🗂 Starter Schema</p>
+          <p class="small muted">Use these tables in your queries. Reset anytime from the header.</p>
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); margin-top:8px;">
+            <div class="card">
+              <p class="title">Employees</p>
+              <table>
+                <tbody>
+                  <tr><td>emp_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>emp_name</td><td class="muted">TEXT</td></tr>
+                  <tr><td>role</td><td class="muted">TEXT</td></tr>
+                  <tr><td>dept_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>manager_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>email</td><td class="muted">TEXT</td></tr>
+                  <tr><td>hire_date</td><td class="muted">TEXT</td></tr>
+                  <tr><td>salary</td><td class="muted">REAL</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <p class="title">Departments</p>
+              <table>
+                <tbody>
+                  <tr><td>dept_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>dept_name</td><td class="muted">TEXT</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <p class="title">Sales</p>
+              <table>
+                <tbody>
+                  <tr><td>sale_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>emp_id</td><td class="muted">INTEGER</td></tr>
+                  <tr><td>amount</td><td class="muted">REAL</td></tr>
+                  <tr><td>sale_date</td><td class="muted">TEXT</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card small">
+          <p class="title">💡 Helpful Notes</p>
+          <ul>
+            <li>This playground runs <b>SQLite</b> (sql.js) in your browser. Most standard SQL works similarly to MySQL/Postgres.</li>
+            <li>Date functions use <code>strftime</code> in SQLite. Syntax differs slightly across databases.</li>
+            <li>Use <code>LIMIT n</code> to avoid huge outputs.</li>
+            <li>Try <code>EXPLAIN QUERY PLAN &lt;your SQL&gt;</code> for a basic execution plan.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="footer">Built for learning — customize lessons and data as you like. Progress is stored in your browser.</div>
+
+  <!-- sql.js (SQLite compiled to WebAssembly) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js" integrity="sha512-8S5kO1R7WbH0tcx1hU4PvJx0j2l5sQYj2oV5awE+8iW3c3JY3SfQyU5t8g8GfQ2m6iC9CGRkJqJj9hu7c3Zl/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- App logic -->
+  <script src="./app.js"></script>
+</body>
+</html>
